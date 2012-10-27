@@ -3,6 +3,10 @@ $(call inherit-product-if-exists, vendor/aokp/prebuilt/prebuilts.mk)
 # Common overlay
 PRODUCT_PACKAGE_OVERLAYS += vendor/aokp/overlay/common
 
+# FJ-OTA
+PRODUCT_PACKAGES += \
+FJ-OTA
+
 # T-Mobile theme engine
 include vendor/aokp/configs/themes_common.mk
 
