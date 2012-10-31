@@ -1,0 +1,1816 @@
+#!/system/bin/sh
+#
+# FJTool - by AlienMind & flappjaxxx
+# It provides an execution interface for controlled commands,
+# plus a configuration interface that allows modifying FJTool.apk
+# interface (adding and removing tabs and options)
+#
+# TODO:
+#
+# * UV scripts should look for configs on an sdcard folder
+# * There are still some commands harcoded into the app
+#   (labeled with *). It's needed to make them optional too
+#   and exported via FJTool setup
+#
+FJTool_VERSION="1.00" # Script version
+HELP="Usage: $0 <cmd> ..."
+### Only root allowed
+WHO=`whoami 2>&1`
+if [ "$WHO" != "root" -a "$WHO" != "whoami: unknown uid 0" ]; then
+  echo "Must be root"
+  exit 1
+fi
+
+if [ "$1" = "" ]; then
+  echo "$HELP"
+  exit 2
+fi
+
+die () {
+  echo $@
+  exit 1
+}
+
+
+ListCommands() {
+  printf "FJTool_VERSION:$FJTool_VERSION\n"
+  printf "$SUPPORTED_COMMANDS\n"
+  printf "$CATEGORIES\n"
+  printf "$CATEGORY_COMMANDS"
+  ( printf "$COMMAND_OPTIONS" ; printf "$COMMAND_DESCRIPTIONS" ) | sort
+}
+
+Upgrade() {
+  local MODE=$1
+  case $MODE in
+    "version")      PrintVersion ;;
+    "checkversion") CheckVersion ;;
+    "FJTool")      UpgradeFJTool ;;
+  esac
+}
+
+PrintVersion() {
+  printf "$FJTool_VERSION"
+}
+
+177dpi() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+/system/xbin/sed -i 's/ro.sf.lcd_density=320/ro.sf.lcd_density=177/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=280/ro.sf.lcd_density=177/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=260/ro.sf.lcd_density=177/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=240/ro.sf.lcd_density=177/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=230/ro.sf.lcd_density=177/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=220/ro.sf.lcd_density=177/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=213/ro.sf.lcd_density=177/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=210/ro.sf.lcd_density=177/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=200/ro.sf.lcd_density=177/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=192/ro.sf.lcd_density=177/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=190/ro.sf.lcd_density=177/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=180/ro.sf.lcd_density=177/g' /system/build.prop
+mount -o ro,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo LCD Density set to 177dpi, -Tablet Mode- Reboot to Activate!
+}
+
+180dpi() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+/system/xbin/sed -i 's/ro.sf.lcd_density=320/ro.sf.lcd_density=180/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=280/ro.sf.lcd_density=180/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=260/ro.sf.lcd_density=180/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=240/ro.sf.lcd_density=180/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=230/ro.sf.lcd_density=180/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=220/ro.sf.lcd_density=180/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=213/ro.sf.lcd_density=180/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=210/ro.sf.lcd_density=180/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=200/ro.sf.lcd_density=180/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=192/ro.sf.lcd_density=180/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=190/ro.sf.lcd_density=180/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=177/ro.sf.lcd_density=180/g' /system/build.prop
+mount -o ro,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo LCD Density set to 180dpi, Reboot to Activate!
+}
+
+190dpi() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+/system/xbin/sed -i 's/ro.sf.lcd_density=320/ro.sf.lcd_density=190/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=280/ro.sf.lcd_density=190/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=260/ro.sf.lcd_density=190/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=240/ro.sf.lcd_density=190/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=230/ro.sf.lcd_density=190/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=220/ro.sf.lcd_density=190/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=213/ro.sf.lcd_density=190/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=210/ro.sf.lcd_density=190/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=200/ro.sf.lcd_density=190/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=192/ro.sf.lcd_density=190/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=180/ro.sf.lcd_density=190/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=177/ro.sf.lcd_density=190/g' /system/build.prop
+mount -o ro,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo LCD Density set to 190dpi, Reboot to Activate!
+}
+
+192dpi() {
+  mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+/system/xbin/sed -i 's/ro.sf.lcd_density=320/ro.sf.lcd_density=192/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=280/ro.sf.lcd_density=192/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=260/ro.sf.lcd_density=192/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=240/ro.sf.lcd_density=192/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=230/ro.sf.lcd_density=192/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=220/ro.sf.lcd_density=192/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=213/ro.sf.lcd_density=192/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=210/ro.sf.lcd_density=192/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=200/ro.sf.lcd_density=192/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=190/ro.sf.lcd_density=192/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=180/ro.sf.lcd_density=192/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=177/ro.sf.lcd_density=192/g' /system/build.prop
+mount -o ro,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo LCD Density set to 192dpi, Reboot to Activate!
+}
+
+200dpi() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+/system/xbin/sed -i 's/ro.sf.lcd_density=320/ro.sf.lcd_density=200/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=280/ro.sf.lcd_density=200/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=260/ro.sf.lcd_density=200/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=240/ro.sf.lcd_density=200/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=230/ro.sf.lcd_density=200/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=220/ro.sf.lcd_density=200/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=213/ro.sf.lcd_density=200/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=210/ro.sf.lcd_density=200/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=190/ro.sf.lcd_density=200/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=192/ro.sf.lcd_density=200/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=180/ro.sf.lcd_density=200/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=177/ro.sf.lcd_density=200/g' /system/build.prop
+mount -o ro,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo LCD Density set to 200dpi, Reboot to Activate!
+}
+
+210dpi() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+/system/xbin/sed -i 's/ro.sf.lcd_density=320/ro.sf.lcd_density=210/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=280/ro.sf.lcd_density=210/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=260/ro.sf.lcd_density=210/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=240/ro.sf.lcd_density=210/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=230/ro.sf.lcd_density=210/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=220/ro.sf.lcd_density=210/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=213/ro.sf.lcd_density=210/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=200/ro.sf.lcd_density=210/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=190/ro.sf.lcd_density=210/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=192/ro.sf.lcd_density=210/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=180/ro.sf.lcd_density=210/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=177/ro.sf.lcd_density=210/g' /system/build.prop
+mount -o ro,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo LCD Density set to 210dpi, Reboot to Activate!
+}
+
+213dpi() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+/system/xbin/sed -i 's/ro.sf.lcd_density=320/ro.sf.lcd_density=213/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=280/ro.sf.lcd_density=213/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=260/ro.sf.lcd_density=213/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=240/ro.sf.lcd_density=213/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=230/ro.sf.lcd_density=213/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=220/ro.sf.lcd_density=213/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=200/ro.sf.lcd_density=213/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=190/ro.sf.lcd_density=213/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=192/ro.sf.lcd_density=213/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=180/ro.sf.lcd_density=213/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=177/ro.sf.lcd_density=213/g' /system/build.prop
+mount -o ro,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo LCD Density set to 213dpi, Reboot to Activate!
+}
+
+220dpi() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+/system/xbin/sed -i 's/ro.sf.lcd_density=320/ro.sf.lcd_density=220/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=280/ro.sf.lcd_density=220/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=260/ro.sf.lcd_density=220/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=240/ro.sf.lcd_density=220/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=230/ro.sf.lcd_density=220/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=213/ro.sf.lcd_density=220/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=210/ro.sf.lcd_density=220/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=200/ro.sf.lcd_density=220/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=190/ro.sf.lcd_density=220/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=192/ro.sf.lcd_density=220/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=180/ro.sf.lcd_density=220/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=177/ro.sf.lcd_density=220/g' /system/build.prop
+mount -o ro,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo LCD Density set to 220dpi, Reboot to Activate!
+}
+
+240dpi() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+/system/xbin/sed -i 's/ro.sf.lcd_density=320/ro.sf.lcd_density=240/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=280/ro.sf.lcd_density=240/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=260/ro.sf.lcd_density=240/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=230/ro.sf.lcd_density=240/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=220/ro.sf.lcd_density=240/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=213/ro.sf.lcd_density=240/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=210/ro.sf.lcd_density=240/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=200/ro.sf.lcd_density=240/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=190/ro.sf.lcd_density=240/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=192/ro.sf.lcd_density=240/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=180/ro.sf.lcd_density=240/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=177/ro.sf.lcd_density=240/g' /system/build.prop
+mount -o ro,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo LCD Density set to 240dpi, Reboot to Activate!
+}
+
+260dpi() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+/system/xbin/sed -i 's/ro.sf.lcd_density=320/ro.sf.lcd_density=260/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=280/ro.sf.lcd_density=260/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=240/ro.sf.lcd_density=260/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=230/ro.sf.lcd_density=260/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=220/ro.sf.lcd_density=260/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=213/ro.sf.lcd_density=260/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=210/ro.sf.lcd_density=260/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=200/ro.sf.lcd_density=260/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=190/ro.sf.lcd_density=260/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=192/ro.sf.lcd_density=260/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=180/ro.sf.lcd_density=260/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=177/ro.sf.lcd_density=260/g' /system/build.prop
+mount -o ro,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo LCD Density set to 260dpi, Reboot to Activate!
+}
+
+280dpi() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+/system/xbin/sed -i 's/ro.sf.lcd_density=320/ro.sf.lcd_density=280/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=260/ro.sf.lcd_density=280/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=240/ro.sf.lcd_density=280/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=230/ro.sf.lcd_density=280/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=220/ro.sf.lcd_density=280/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=213/ro.sf.lcd_density=260/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=210/ro.sf.lcd_density=280/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=200/ro.sf.lcd_density=280/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=190/ro.sf.lcd_density=280/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=192/ro.sf.lcd_density=280/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=180/ro.sf.lcd_density=280/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=177/ro.sf.lcd_density=280/g' /system/build.prop
+mount -o ro,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo LCD Density set to 280dpi, Reboot to Activate!
+}
+
+320dpi() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+/system/xbin/sed -i 's/ro.sf.lcd_density=280/ro.sf.lcd_density=320/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=260/ro.sf.lcd_density=320/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=240/ro.sf.lcd_density=320/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=230/ro.sf.lcd_density=320/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=220/ro.sf.lcd_density=320/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=213/ro.sf.lcd_density=320/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=210/ro.sf.lcd_density=320/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=200/ro.sf.lcd_density=320/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=190/ro.sf.lcd_density=320/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=192/ro.sf.lcd_density=320/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=180/ro.sf.lcd_density=320/g' /system/build.prop
+/system/xbin/sed -i 's/ro.sf.lcd_density=177/ro.sf.lcd_density=320/g' /system/build.prop
+mount -o ro,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo LCD Density set to 320dpi - Stock DPI, Reboot to Activate!
+}
+
+gpsatt() {
+FILE=gpsatt.tgz
+MD5SUM=918345eeadec96ff65a36fda1a06945e
+URL="http://rootdev.org/gps/gpsatt.tgz"
+if [ ! -d /sdcard/download/tmp ]; then
+  MK=1
+  mkdir -p /sdcard/download/tmp
+fi
+cd /sdcard/download/tmp
+if [ -f "$FILE" ]; then
+MD5=`md5sum $FILE | awk '{ print $1 }'`
+  if [ "$MD5" = "$MD5SUM" ]; then
+     GOOD=1
+  fi
+fi
+if [ "$GOOD" != "1" ]; then 
+echo "Downloading Package Be Patient"
+rm  "$FILE"
+wget "$URL"
+  MD5=`md5sum $FILE | awk '{ print $1 }'`
+  if [ "$MD5" = "$MD5SUM" ]; then
+     GOOD=1
+  fi
+fi
+if [ "$GOOD" = "1" ]; then
+  mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+  echo "Removing Old Config Files"
+  rm  /system/etc/SuplRootCert
+  rm  /system/etc/gps.conf
+  cd /sdcard/download/tmp
+echo "Extracting Package"
+  tar -xzf gpsatt.tgz
+echo "Copy Config Files"
+  cp gps.conf /system/etc/gps.conf
+  cp SuplRootCert /system/etc/SuplRootCert
+echo "Cleaning up"
+    mount -o ro,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+  cd - >/dev/null 2>&1
+  echo "Done! Please Reboot to Activate ATT GPS Config"
+else
+  echo "Failed to Install ATT GPS Config"
+  echo "Try Again"
+  exit 1
+fi
+rm  /sdcard/download/tmp/gps.conf
+rm  /sdcard/download/tmp/SuplRootCert
+rm  /sdcard/download/tmp/$FILE
+rm -R /sdcard/download/rectmp
+
+if [ "$MK" = "1" ]; then
+  rm -R /sdcard/download/tmp 
+fi
+}
+
+gpsgeneric() {
+FILE=gpsgeneric.tgz
+MD5SUM=f70cf4c3a81cd8f5d1864fe08bfb36b2
+URL="http://rootdev.org/gps/gpsgeneric.tgz"
+if [ ! -d /sdcard/download/tmp ]; then
+  MK=1
+  mkdir -p /sdcard/download/tmp
+fi
+cd /sdcard/download/tmp
+if [ -f "$FILE" ]; then
+MD5=`md5sum $FILE | awk '{ print $1 }'`
+  if [ "$MD5" = "$MD5SUM" ]; then
+     GOOD=1
+  fi
+fi
+if [ "$GOOD" != "1" ]; then 
+echo "Downloading Package Be Patient"
+rm  "$FILE"
+wget "$URL"
+  MD5=`md5sum $FILE | awk '{ print $1 }'`
+  if [ "$MD5" = "$MD5SUM" ]; then
+     GOOD=1
+  fi
+fi
+if [ "$GOOD" = "1" ]; then
+  mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+  echo "Removing Old Config Files"
+  rm  /system/etc/SuplRootCert
+  rm  /system/etc/gps.conf
+  cd /sdcard/download/tmp
+echo "Extracting Package"
+  tar -xzf gpsgeneric.tgz
+echo "Copy Config Files"
+  cp gps.conf /system/etc/gps.conf
+  cp SuplRootCert /system/etc/SuplRootCert
+echo "Cleaning up"
+    mount -o ro,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+  cd - >/dev/null 2>&1
+  echo "Done! Please Reboot to Activate Generic GPS Config"
+else
+  echo "Failed to Install Generic GPS Config"
+  echo "Try Again"
+  exit 1
+fi
+rm  /sdcard/download/tmp/gps.conf
+rm  /sdcard/download/tmp/SuplRootCert
+rm  /sdcard/download/tmp/$FILE
+rm -R /sdcard/download/rectmp
+
+if [ "$MK" = "1" ]; then
+  rm -R /sdcard/download/tmp 
+fi
+}
+
+gpsstock() {
+FILE=gpstock.tgz
+MD5SUM=f0530b2f3a710ec1a1cf7ce84071198d
+URL="http://rootdev.org/gps/gpstock.tgz"
+if [ ! -d /sdcard/download/tmp ]; then
+  MK=1
+  mkdir -p /sdcard/download/tmp
+fi
+cd /sdcard/download/tmp
+if [ -f "$FILE" ]; then
+MD5=`md5sum $FILE | awk '{ print $1 }'`
+  if [ "$MD5" = "$MD5SUM" ]; then
+     GOOD=1
+  fi
+fi
+if [ "$GOOD" != "1" ]; then 
+echo "Downloading Package Be Patient"
+rm  "$FILE"
+wget "$URL"
+  MD5=`md5sum $FILE | awk '{ print $1 }'`
+  if [ "$MD5" = "$MD5SUM" ]; then
+     GOOD=1
+  fi
+fi
+if [ "$GOOD" = "1" ]; then
+  mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+  echo "Removing Old Config Files"
+  rm  /system/etc/SuplRootCert
+  rm  /system/etc/gps.conf
+  cd /sdcard/download/tmp
+echo "Extracting Package"
+  tar -xzf gpstock.tgz
+echo "Copy Config Files"
+  cp gps.conf /system/etc/gps.conf
+echo "Cleaning up"
+    mount -o ro,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+  cd - >/dev/null 2>&1
+  echo "Done! Please Reboot to Activate Stock GPS Config"
+else
+  echo "Failed to Install Stock GPS Config"
+  echo "Try Again"
+  exit 1
+fi
+rm  /sdcard/download/tmp/gps.conf
+rm  /sdcard/download/tmp/SuplRootCert
+rm  /sdcard/download/tmp/$FILE
+rm -R /sdcard/download/rectmp
+
+if [ "$MK" = "1" ]; then
+  rm -R /sdcard/download/tmp 
+fi
+}
+
+gpstmobile() {
+FILE=gpstmobile.tgz
+MD5SUM=0c9aba497612c86fc2eea0c2c07add60
+URL="http://rootdev.org/gps/gpstmobile.tgz"
+if [ ! -d /sdcard/download/tmp ]; then
+  MK=1
+  mkdir -p /sdcard/download/tmp
+fi
+cd /sdcard/download/tmp
+if [ -f "$FILE" ]; then
+MD5=`md5sum $FILE | awk '{ print $1 }'`
+  if [ "$MD5" = "$MD5SUM" ]; then
+     GOOD=1
+  fi
+fi
+if [ "$GOOD" != "1" ]; then 
+echo "Downloading Package Be Patient"
+rm  "$FILE"
+wget "$URL"
+  MD5=`md5sum $FILE | awk '{ print $1 }'`
+  if [ "$MD5" = "$MD5SUM" ]; then
+     GOOD=1
+  fi
+fi
+if [ "$GOOD" = "1" ]; then
+  mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+  echo "Removing Old Config Files"
+  rm  /system/etc/SuplRootCert
+  rm  /system/etc/gps.conf
+  cd /sdcard/download/tmp
+echo "Extracting Package"
+  tar -xzf gpstmobile.tgz
+echo "Copy Config Files"
+  cp gps.conf /system/etc/gps.conf
+  cp SuplRootCert /system/etc/SuplRootCert
+  echo "Cleaning up"
+    mount -o ro,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+  cd - >/dev/null 2>&1
+  echo "Done! Please Reboot to Activate T-Mobile GPS Config"
+else
+  echo "Failed to Install T-Mobile GPS Config"
+  echo "Try Again"
+  exit 1
+fi
+rm  /sdcard/download/tmp/gps.conf
+rm  /sdcard/download/tmp/SuplRootCert
+rm  /sdcard/download/tmp/$FILE
+rm -R /sdcard/download/rectmp
+
+if [ "$MK" = "1" ]; then
+  rm -R /sdcard/download/tmp 
+fi
+}
+
+gpsww() {
+FILE=gpsww.tgz
+MD5SUM=cc20c20f1e8261e40ceb2e92fb1af654
+URL="http://rootdev.org/gps/gpsww.tgz"
+if [ ! -d /sdcard/download/tmp ]; then
+  MK=1
+  mkdir -p /sdcard/download/tmp
+fi
+cd /sdcard/download/tmp
+if [ -f "$FILE" ]; then
+MD5=`md5sum $FILE | awk '{ print $1 }'`
+  if [ "$MD5" = "$MD5SUM" ]; then
+     GOOD=1
+  fi
+fi
+if [ "$GOOD" != "1" ]; then 
+echo "Downloading Package Be Patient"
+rm  "$FILE"
+wget "$URL"
+  MD5=`md5sum $FILE | awk '{ print $1 }'`
+  if [ "$MD5" = "$MD5SUM" ]; then
+     GOOD=1
+  fi
+fi
+if [ "$GOOD" = "1" ]; then
+  mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+  echo "Removing Old Config Files"
+  rm  /system/etc/SuplRootCert
+  rm  /system/etc/gps.conf
+  cd /sdcard/download/tmp
+echo "Extracting Package"
+  tar -xzf gpsww.tgz
+echo "Copy Config Files"
+  cp gps.conf /system/etc/gps.conf
+echo "Cleaning up"
+    mount -o ro,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+  cd - >/dev/null 2>&1
+  echo "Done! Please Reboot to Activate Worldwide 1.3 GPS Config"
+else
+  echo "Failed to Install Worldwide 1.3 GPS Config"
+  echo "Try Again"
+  exit 1
+fi
+rm  /sdcard/download/tmp/gps.conf
+rm  /sdcard/download/tmp/SuplRootCert
+rm  /sdcard/download/tmp/$FILE
+rm -R /sdcard/download/rectmp
+
+if [ "$MK" = "1" ]; then
+  rm -R /sdcard/download/tmp 
+fi
+}
+
+gpswwa() {
+FILE=gpswwa.tgz
+MD5SUM=32a92de7a58a8e9a188e640c07c59747
+URL="http://rootdev.org/gps/gpswwa.tgz"
+if [ ! -d /sdcard/download/tmp ]; then
+  MK=1
+  mkdir -p /sdcard/download/tmp
+fi
+cd /sdcard/download/tmp
+if [ -f "$FILE" ]; then
+MD5=`md5sum $FILE | awk '{ print $1 }'`
+  if [ "$MD5" = "$MD5SUM" ]; then
+     GOOD=1
+  fi
+fi
+if [ "$GOOD" != "1" ]; then 
+echo "Downloading Package Be Patient"
+rm  "$FILE"
+wget "$URL"
+  MD5=`md5sum $FILE | awk '{ print $1 }'`
+  if [ "$MD5" = "$MD5SUM" ]; then
+     GOOD=1
+  fi
+fi
+if [ "$GOOD" = "1" ]; then
+  mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+  echo "Removing Old Config Files"
+  rm  /system/etc/SuplRootCert
+  rm  /system/etc/gps.conf
+  cd /sdcard/download/tmp
+echo "Extracting Package"
+  tar -xzf gpswwa.tgz
+echo "Copy Config Files"
+  cp gps.conf /system/etc/gps.conf
+echo "Cleaning up"
+    mount -o ro,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+  cd - >/dev/null 2>&1
+  echo "Done! Please Reboot to Activate Worldwide Alternate GPS Config"
+else
+  echo "Failed to Install Worldwide Alternate GPS Config"
+  echo "Try Again"
+  exit 1
+fi
+rm  /sdcard/download/tmp/gps.conf
+rm  /sdcard/download/tmp/SuplRootCert
+rm  /sdcard/download/tmp/$FILE
+rm -R /sdcard/download/rectmp
+
+if [ "$MK" = "1" ]; then
+  rm -R /sdcard/download/tmp 
+fi
+}
+
+noadblock() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+rm /system/etc/hosts
+echo '127.0.0.1		    localhost' > /system/etc/hosts
+chmod 644 /system/etc/hosts
+mount -o ro,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo Restored stock hosts file
+echo Ad Blocking Disabled
+echo Reboot required!
+}
+
+rmsupl() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+rm  /system/etc/SuplRootCert
+mount -o ro,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo Removed SuplRootCert!
+}
+
+yesadblock() {
+mkdir /sdcard/tmp
+cd /sdcard/tmp
+echo Downloading latest hosts file
+wget http://rootdev.org/i717/TU2/updates/hosts.txt
+echo Installing updated hosts file
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+cp -f hosts.txt /system/etc/hosts
+chmod 644 /system/etc/hosts
+rm /sdcard/tmp/hosts.txt
+mount -o ro,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo Installed Custom hosts file
+echo Ad Blocking Enabled
+echo Reboot required to apply changes!
+}
+
+upfjtools() {
+rm -R /sdcard/fjtoolstmp
+mkdir /sdcard/fjtoolstmp
+cd /sdcard/fjtoolstmp
+echo "Downloading Package Be Patient"
+wget http://rootdev.org/i717/TU2/updates/fjtoolsupdatejb21b6.tgz
+echo "Extracting Package"
+tar -xzf fjtoolsupdatejb21b6.tgz
+echo "Mounting File Systems"
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p25 /data
+cd /sdcard/fjtoolstmp/system
+echo "Copying New Files"
+cp -R bin /system
+cp -R media /system
+echo "Setting Permissions"
+chmod 755 /system/bin/fjtool
+cd app
+echo "Updating Tools App"
+pm install -r FJTools-Note.apk
+echo "Removing Old Files"
+rm /system/app/FJTools-Note.apk
+sleep 3
+rm -R /sdcard/fjtoolstmp
+echo "Done! FJTools Updated"
+mount -o ro,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+}
+
+novalauncher() {
+FILE=NovaLauncher_1.2.2.apk
+MD5SUM=78d79e05939063718e429765a96bdc5c
+URL="http://rootdev.org/i717/TU2/updates/NovaLauncher_1.2.2.apk"
+if [ ! -d /sdcard/tmp ]; then
+  MK=1
+  mkdir -p /sdcard/tmp
+fi
+cd /sdcard/tmp
+if [ -f "$FILE" ]; then
+  MD5=`md5sum $FILE | awk '{ print $1 }'`
+  if [ "$MD5" = "$MD5SUM" ]; then
+     GOOD=1
+  fi
+fi
+if [ "$GOOD" != "1" ]; then
+echo "Downloading Package Be Patient"
+  rm  "$FILE"
+  wget "$URL"
+  MD5=`md5sum $FILE | awk '{ print $1 }'`
+  if [ "$MD5" = "$MD5SUM" ]; then
+     GOOD=1
+  fi
+fi
+if [ "$GOOD" = "1" ]; then
+echo "Mounting File System"
+  mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+  cd /
+echo "Copying NovaLauncher to /system/app"
+  cp /sdcard/tmp/NovaLauncher_1.2.2.apk /system/app/NovaLauncher_1.2.2.apk
+echo "Setting Permissions"
+  chmod 644 /system/app/NovaLauncher_1.2.2.apk
+  mount -o ro,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+  cd - >/dev/null 2>&1
+  echo "Done! Enjoy NovaLauncher!"
+else
+  echo "Failed to download / install NovaLauncher"
+  exit 1
+fi
+rm  /sdcard/tmp/$FILE
+
+if [ "$MK" = "1" ]; then
+  rmdir /sdcard/tmp 
+fi
+}
+
+apexlauncher() {
+FILE=ApexLauncher_v1.2.5.apk
+MD5SUM=e2d33e7062a5e9623f3066766b04b311
+URL="http://rootdev.org/i717/TU2/updates/ApexLauncher_v1.2.5.apk"
+if [ ! -d /sdcard/tmp ]; then
+  MK=1
+  mkdir -p /sdcard/tmp
+fi
+cd /sdcard/tmp
+if [ -f "$FILE" ]; then
+  MD5=`md5sum $FILE | awk '{ print $1 }'`
+  if [ "$MD5" = "$MD5SUM" ]; then
+     GOOD=1
+  fi
+fi
+if [ "$GOOD" != "1" ]; then
+echo "Downloading Package Be Patient"
+  rm  "$FILE"
+  wget "$URL"
+  MD5=`md5sum $FILE | awk '{ print $1 }'`
+  if [ "$MD5" = "$MD5SUM" ]; then
+     GOOD=1
+  fi
+fi
+if [ "$GOOD" = "1" ]; then
+echo "Mounting File System"
+  mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+  cd /
+echo "Copying ApexLauncher to /system/app"
+  cp /sdcard/tmp/ApexLauncher_v1.2.5.apk /system/app/ApexLauncher_v1.2.5.apk
+echo "Setting Permissions"
+  chmod 644 /system/app/ApexLauncher_v1.2.5.apk
+  mount -o ro,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+  cd - >/dev/null 2>&1
+  echo "Done! Enjoy ApexLauncher!"
+else
+  echo "Failed to download / install ApexLauncher"
+  exit 1
+fi
+rm  /sdcard/tmp/$FILE
+
+if [ "$MK" = "1" ]; then
+  rmdir /sdcard/tmp 
+fi
+}
+
+netflixblk() {
+FILE=Netflix-Black-Rotation-v2.0.2.apk
+MD5SUM=268f93565b0a4a9dc0b402f5627ff87b
+URL="http://rootdev.org/i717/TU2/OTA/Apps/Netflix-Black-Rotation-v2.0.2.apk"
+if [ ! -d /sdcard/tmp ]; then
+  MK=1
+  mkdir -p /sdcard/tmp
+fi
+cd /sdcard/tmp
+if [ -f "$FILE" ]; then
+  MD5=`md5sum $FILE | awk '{ print $1 }'`
+  if [ "$MD5" = "$MD5SUM" ]; then
+     GOOD=1
+  fi
+fi
+if [ "$GOOD" != "1" ]; then
+echo "Downloading Package Be Patient"
+  rm  "$FILE"
+  wget "$URL"
+  MD5=`md5sum $FILE | awk '{ print $1 }'`
+  if [ "$MD5" = "$MD5SUM" ]; then
+     GOOD=1
+  fi
+fi
+if [ "$GOOD" = "1" ]; then
+echo "Installing Netflix Black with Rotation Mods"
+cd /sdcard/tmp
+pm install -r Netflix-Black-Rotation-v2.0.2.apk
+else
+  echo "Failed to download / install Netflix-Black-Rotation-v2.0.2"
+  exit 1
+fi
+rm  /sdcard/tmp/$FILE
+
+if [ "$MK" = "1" ]; then
+  rmdir /sdcard/tmp 
+fi
+}
+
+checkfjtools() {
+cd /sdcard
+wget http://rootdev.org/i717/TU2/updates/fjtversioncm10
+echo --FJ-Tools Version Installed--
+cat /system/media/fjtversion
+echo
+echo --Latest Version Available--
+cat /sdcard/fjtversioncm10
+echo
+rm /sdcard/fjtversioncm10
+}
+
+wipfeat() {
+echo "--Work In Progress--"
+}
+
+disabled() {
+echo "--Feature disabled for now--"
+}
+
+cwmrec5() {
+FILE=cwmrec5.tgz
+MD5SUM=9c0a662a8f3abc56925bfb846e0b5d01
+URL="http://rootdev.org/i717/TU2/updates/cwmrec5.tgz"
+if [ ! -d /sdcard/download/rectmp ]; then
+  MK=1
+  mkdir -p /sdcard/download/rectmp
+fi
+cd /sdcard/download/rectmp
+if [ -f "$FILE" ]; then
+MD5=`md5sum $FILE | awk '{ print $1 }'`
+  if [ "$MD5" = "$MD5SUM" ]; then
+     GOOD=1
+  fi
+fi
+if [ "$GOOD" != "1" ]; then 
+echo "Downloading Package Be Patient"
+rm  "$FILE"
+wget "$URL"
+  MD5=`md5sum $FILE | awk '{ print $1 }'`
+  if [ "$MD5" = "$MD5SUM" ]; then
+     GOOD=1
+  fi
+fi
+if [ "$GOOD" = "1" ]; then
+  cd /sdcard/download/rectmp
+echo "Extracting Package"
+  tar -xzf cwmrec5.tgz
+echo "Flashing Recovery"
+  cp recovery.img /sdcard/recovery.img
+dd if=/sdcard/recovery.img of=/dev/block/mmcblk0p22
+echo "Cleaning up"
+  cd - >/dev/null 2>&1
+  echo "Done! Please Reboot and Enjoy CWM Recovery"
+else
+  echo "Failed to Install CWM Recovery"
+  echo "Try Again"
+  exit 1
+fi
+rm  /sdcard/recovery.img
+rm  /sdcard/download/rectmp/$FILE
+rm -R /sdcard/download/rectmp
+
+if [ "$MK" = "1" ]; then
+  rm -R /sdcard/download/rectmp 
+fi
+}
+
+cwmrec6() {
+FILE=cwmtouch6.tgz
+MD5SUM=d54a2c1250ddc8f795aef00a8104180f
+URL="http://rootdev.org/i717/TU2/updates/cwmtouch6.tgz"
+if [ ! -d /sdcard/download/rectmp ]; then
+  MK=1
+  mkdir -p /sdcard/download/rectmp
+fi
+cd /sdcard/download/rectmp
+if [ -f "$FILE" ]; then
+MD5=`md5sum $FILE | awk '{ print $1 }'`
+  if [ "$MD5" = "$MD5SUM" ]; then
+     GOOD=1
+  fi
+fi
+if [ "$GOOD" != "1" ]; then 
+echo "Downloading Package Be Patient"
+rm  "$FILE"
+wget "$URL"
+  MD5=`md5sum $FILE | awk '{ print $1 }'`
+  if [ "$MD5" = "$MD5SUM" ]; then
+     GOOD=1
+  fi
+fi
+if [ "$GOOD" = "1" ]; then
+  cd /sdcard/download/rectmp
+echo "Extracting Package"
+  tar -xzf cwmtouch6.tgz
+echo "Flashing Recovery"
+  cp recovery.img /sdcard/recovery.img
+dd if=/sdcard/recovery.img of=/dev/block/mmcblk0p22
+echo "Cleaning up"
+  cd - >/dev/null 2>&1
+  echo "Done! Please Reboot and Enjoy CWM Recovery 6.0.1.4"
+  echo "Go give bhundven some thanks!"
+else
+  echo "Failed to Install CWM Touch Recovery"
+  echo "Try Again"
+  exit 1
+fi
+rm  /sdcard/recovery.img
+rm  /sdcard/download/rectmp/$FILE
+rm -R /sdcard/download/rectmp
+
+if [ "$MK" = "1" ]; then
+  rm -R /sdcard/download/rectmp 
+fi
+}
+
+cwmtouch() {
+FILE=cwmtouch5.tgz
+MD5SUM=d260c22aad6d2efcf764da695b3181c7
+URL="http://rootdev.org/i717/TU2/updates/cwmtouch5.tgz"
+if [ ! -d /sdcard/download/rectmp ]; then
+  MK=1
+  mkdir -p /sdcard/download/rectmp
+fi
+cd /sdcard/download/rectmp
+if [ -f "$FILE" ]; then
+MD5=`md5sum $FILE | awk '{ print $1 }'`
+  if [ "$MD5" = "$MD5SUM" ]; then
+     GOOD=1
+  fi
+fi
+if [ "$GOOD" != "1" ]; then 
+echo "Downloading Package Be Patient"
+rm  "$FILE"
+wget "$URL"
+  MD5=`md5sum $FILE | awk '{ print $1 }'`
+  if [ "$MD5" = "$MD5SUM" ]; then
+     GOOD=1
+  fi
+fi
+if [ "$GOOD" = "1" ]; then
+  cd /sdcard/download/rectmp
+echo "Extracting Package"
+  tar -xzf cwmtouch5.tgz
+echo "Flashing Recovery"
+  cp recovery.img /sdcard/recovery.img
+dd if=/sdcard/recovery.img of=/dev/block/mmcblk0p22
+echo "Cleaning up"
+  cd - >/dev/null 2>&1
+  echo "Done! Please Reboot and Enjoy CWM Touch Recovery"
+else
+  echo "Failed to Install CWM Touch Recovery"
+  echo "Try Again"
+  exit 1
+fi
+rm  /sdcard/recovery.img
+rm  /sdcard/download/rectmp/$FILE
+rm -R /sdcard/download/rectmp
+
+if [ "$MK" = "1" ]; then
+  rm -R /sdcard/download/rectmp 
+fi
+}
+
+twrp() {
+FILE=twrprec231.tgz
+MD5SUM=af6666459161328fc742d91a7e67d54b
+URL="http://rootdev.org/i717/TU2/updates/twrprec231.tgz"
+if [ ! -d /sdcard/download/rectmp ]; then
+  MK=1
+  mkdir -p /sdcard/download/rectmp
+fi
+cd /sdcard/download/rectmp
+if [ -f "$FILE" ]; then
+MD5=`md5sum $FILE | awk '{ print $1 }'`
+  if [ "$MD5" = "$MD5SUM" ]; then
+     GOOD=1
+  fi
+fi
+if [ "$GOOD" != "1" ]; then 
+echo "Downloading Package Be Patient"
+rm  "$FILE"
+wget "$URL"
+  MD5=`md5sum $FILE | awk '{ print $1 }'`
+  if [ "$MD5" = "$MD5SUM" ]; then
+     GOOD=1
+  fi
+fi
+if [ "$GOOD" = "1" ]; then
+  cd /sdcard/download/rectmp
+echo "Extracting Package"
+  tar -xzf twrprec231.tgz
+echo "Flashing Recovery"
+  cp recovery.img /sdcard/recovery.img
+dd if=/sdcard/recovery.img of=/dev/block/mmcblk0p22
+echo "Cleaning up"
+  cd - >/dev/null 2>&1
+  echo "Done! Please Reboot and Enjoy TWRP Recovery"
+else
+  echo "Failed to Install TWRP Recovery"
+  echo "Try Again"
+  exit 1
+fi
+rm  /sdcard/recovery.img
+rm  /sdcard/download/rectmp/$FILE
+rm -R /sdcard/download/rectmp
+
+if [ "$MK" = "1" ]; then
+  rm -R /sdcard/download/rectmp 
+fi
+}
+
+192sleepmax() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo '192000' > /system/etc/andrev_oc/sleep_max
+echo 'Tweaked' > /system/media/profile
+}
+
+192sleepmin() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo '192000' > /system/etc/andrev_oc/sleep_min
+echo 'Tweaked' > /system/media/profile
+}
+
+192wakemax() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo '192000' > /system/etc/andrev_oc/wake_max
+echo '192000' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+echo 'Tweaked' > /system/media/profile
+rm -f /system/etc/init.d/84fj
+echo 'echo '192000' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq' > /system/etc/init.d/84fjwmax
+chmod 755 /system/etc/init.d/84fjwmax
+}
+
+192wakemin() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo '192000' > /system/etc/andrev_oc/wake_min
+echo '192000' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
+echo 'Tweaked' > /system/media/profile
+rm -f /system/etc/init.d/84fj
+echo 'echo '192000' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq' > /system/etc/init.d/84fjwmin
+chmod 755 /system/etc/init.d/84fjwmin
+}
+
+384sleepmax() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo '384000' > /system/etc/andrev_oc/sleep_max
+echo 'Tweaked' > /system/media/profile
+}
+
+384sleepmin() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo '384000' > /system/etc/andrev_oc/sleep_min
+echo 'Tweaked' > /system/media/profile
+}
+
+384wakemax() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo '384000' > /system/etc/andrev_oc/wake_max
+echo '384000' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+echo 'Tweaked' > /system/media/profile
+rm -f /system/etc/init.d/84fj
+echo 'echo '384000' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq' > /system/etc/init.d/84fjwmax
+chmod 755 /system/etc/init.d/84fjwmax
+}
+
+384wakemin() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo '384000' > /system/etc/andrev_oc/wake_min
+echo '384000' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
+echo 'Tweaked' > /system/media/profile
+rm -f /system/etc/init.d/84fj
+echo 'echo '384000' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq' > /system/etc/init.d/84fjwmin
+chmod 755 /system/etc/init.d/84fjwmin
+}
+
+486sleepmax() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo '486000' > /system/etc/andrev_oc/sleep_max
+echo 'Tweaked' > /system/media/profile
+}
+
+486sleepmin() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo '486000' > /system/etc/andrev_oc/sleep_min
+echo 'Tweaked' > /system/media/profile
+}
+
+486wakemax() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo '486000' > /system/etc/andrev_oc/wake_max
+echo '486000' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+echo 'Tweaked' > /system/media/profile
+rm -f /system/etc/init.d/84fj
+echo 'echo '486000' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq' > /system/etc/init.d/84fjwmax
+chmod 755 /system/etc/init.d/84fjwmax
+}
+
+486wakemin() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo '486000' > /system/etc/andrev_oc/wake_min
+echo '486000' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
+echo 'Tweaked' > /system/media/profile
+rm -f /system/etc/init.d/84fj
+echo 'echo '486000' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq' > /system/etc/init.d/84fjwmin
+chmod 755 /system/etc/init.d/84fjwmin
+}
+
+594sleepmax() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo '594000' > /system/etc/andrev_oc/sleep_max
+echo 'Tweaked' > /system/media/profile
+}
+
+594sleepmin() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo '594000' > /system/etc/andrev_oc/sleep_min
+echo 'Tweaked' > /system/media/profile
+}
+
+594wakemax() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo '594000' > /system/etc/andrev_oc/wake_max
+echo '594000' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+echo 'Tweaked' > /system/media/profile
+rm -f /system/etc/init.d/84fj
+echo 'echo '594000' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq' > /system/etc/init.d/84fjwmax
+chmod 755 /system/etc/init.d/84fjwmax
+}
+
+594wakemin() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo '594000' > /system/etc/andrev_oc/wake_min
+echo '594000' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
+echo 'Tweaked' > /system/media/profile
+rm -f /system/etc/init.d/84fj
+echo 'echo '594000' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq' > /system/etc/init.d/84fjwmin
+chmod 755 /system/etc/init.d/84fjwmin
+}
+
+702sleepmax() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo '702000' > /system/etc/andrev_oc/sleep_max
+echo 'Tweaked' > /system/media/profile
+}
+
+702sleepmin() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo '702000' > /system/etc/andrev_oc/sleep_min
+echo 'Tweaked' > /system/media/profile
+}
+
+702wakemax() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo '702000' > /system/etc/andrev_oc/wake_max
+echo '702000' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+echo 'Tweaked' > /system/media/profile
+rm -f /system/etc/init.d/84fj
+echo 'echo '702000' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq' > /system/etc/init.d/84fjwmax
+chmod 755 /system/etc/init.d/84fjwmax
+}
+
+702wakemin() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo '702000' > /system/etc/andrev_oc/wake_min
+echo '702000' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
+echo 'Tweaked' > /system/media/profile
+rm -f /system/etc/init.d/84fj
+echo 'echo '702000' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq' > /system/etc/init.d/84fjwmin
+chmod 755 /system/etc/init.d/84fjwmin
+}
+
+864sleepmax() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo '864000' > /system/etc/andrev_oc/sleep_max
+echo 'Tweaked' > /system/media/profile
+}
+
+864sleepmin() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo '864000' > /system/etc/andrev_oc/sleep_min
+echo 'Tweaked' > /system/media/profile
+}
+
+864wakemax() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo '864000' > /system/etc/andrev_oc/wake_max
+echo '864000' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+echo 'Tweaked' > /system/media/profile
+rm -f /system/etc/init.d/84fj
+echo 'echo '864000' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq' > /system/etc/init.d/84fjwmax
+chmod 755 /system/etc/init.d/84fjwmax
+}
+
+864wakemin() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo '864000' > /system/etc/andrev_oc/wake_min
+echo '864000' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
+echo 'Tweaked' > /system/media/profile
+rm -f /system/etc/init.d/84fj
+echo 'echo '864000' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq' > /system/etc/init.d/84fjwmin
+chmod 755 /system/etc/init.d/84fjwmin
+}
+
+918sleepmax() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo '918000' > /system/etc/andrev_oc/sleep_max
+echo 'Tweaked' > /system/media/profile
+}
+
+918sleepmin() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo '918000' > /system/etc/andrev_oc/sleep_min
+echo 'Tweaked' > /system/media/profile
+}
+
+918wakemax() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo '918000' > /system/etc/andrev_oc/wake_max
+echo '918000' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+echo 'Tweaked' > /system/media/profile
+rm -f /system/etc/init.d/84fj
+echo 'echo '918000' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq' > /system/etc/init.d/84fjwmax
+chmod 755 /system/etc/init.d/84fjwmax
+}
+
+918wakemin() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo '918000' > /system/etc/andrev_oc/wake_min
+echo '918000' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
+echo 'Tweaked' > /system/media/profile
+rm -f /system/etc/init.d/84fj
+echo 'echo '918000' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq' > /system/etc/init.d/84fjwmin
+chmod 755 /system/etc/init.d/84fjwmin
+}
+
+972sleepmax() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo '972000' > /system/etc/andrev_oc/sleep_max
+echo 'Tweaked' > /system/media/profile
+}
+
+972sleepmin() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo '972000' > /system/etc/andrev_oc/sleep_min
+echo 'Tweaked' > /system/media/profile
+}
+
+972wakemax() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo '972000' > /system/etc/andrev_oc/wake_max
+echo '972000' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+echo 'Tweaked' > /system/media/profile
+rm -f /system/etc/init.d/84fj
+echo 'echo '972000' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq' > /system/etc/init.d/84fjwmax
+chmod 755 /system/etc/init.d/84fjwmax
+}
+
+972wakemin() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo '972000' > /system/etc/andrev_oc/wake_min
+echo '972000' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
+echo 'Tweaked' > /system/media/profile
+rm -f /system/etc/init.d/84fj
+echo 'echo '972000' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq' > /system/etc/init.d/84fjwmin
+chmod 755 /system/etc/init.d/84fjwmin
+}
+
+1134sleepmax() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo '1134000' > /system/etc/andrev_oc/sleep_max
+echo 'Tweaked' > /system/media/profile
+}
+
+1134sleepmin() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo '1134000' > /system/etc/andrev_oc/sleep_min
+echo 'Tweaked' > /system/media/profile
+}
+
+1134wakemax() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo '1134000' > /system/etc/andrev_oc/wake_max
+echo '1134000' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+echo 'Tweaked' > /system/media/profile
+rm -f /system/etc/init.d/84fj
+echo 'echo '1134000' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq' > /system/etc/init.d/84fjwmax
+chmod 755 /system/etc/init.d/84fjwmax
+}
+
+1134wakemin() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo '1134000' > /system/etc/andrev_oc/wake_min
+echo '1134000' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
+echo 'Tweaked' > /system/media/profile
+rm -f /system/etc/init.d/84fj
+echo 'echo '1134000' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq' > /system/etc/init.d/84fjwmin
+chmod 755 /system/etc/init.d/84fjwmin
+}
+
+1350sleepmax() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo '1350000' > /system/etc/andrev_oc/sleep_max
+echo 'Tweaked' > /system/media/profile
+}
+
+1350sleepmin() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo '1350000' > /system/etc/andrev_oc/sleep_min
+echo 'Tweaked' > /system/media/profile
+}
+
+1350wakemax() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo '1350000' > /system/etc/andrev_oc/wake_max
+echo '1350000' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+echo 'Tweaked' > /system/media/profile
+rm -f /system/etc/init.d/84fj
+echo 'echo '1350000' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq' > /system/etc/init.d/84fjwmax
+chmod 755 /system/etc/init.d/84fjwmax
+}
+
+1350wakemin() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo '1350000' > /system/etc/andrev_oc/wake_min
+echo '1350000' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
+echo 'Tweaked' > /system/media/profile
+rm -f /system/etc/init.d/84fj
+echo 'echo '1350000' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq' > /system/etc/init.d/84fjwmin
+chmod 755 /system/etc/init.d/84fjwmin
+}
+
+1512sleepmax() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo '1512000' > /system/etc/andrev_oc/sleep_max
+echo 'Tweaked' > /system/media/profile
+}
+
+1512sleepmin() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo '1512000' > /system/etc/andrev_oc/sleep_min
+echo 'Tweaked' > /system/media/profile
+}
+
+1512wakemax() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo '1512000' > /system/etc/andrev_oc/wake_max
+echo '1512000' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+echo 'Tweaked' > /system/media/profile
+rm -f /system/etc/init.d/84fj
+echo 'echo '1512000' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq' > /system/etc/init.d/84fjwmax
+chmod 755 /system/etc/init.d/84fjwmax
+}
+
+1512wakemin() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo '1512000' > /system/etc/andrev_oc/wake_min
+echo '1512000' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
+echo 'Tweaked' > /system/media/profile
+rm -f /system/etc/init.d/84fj
+echo 'echo '1512000' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq' > /system/etc/init.d/84fjwmin
+chmod 755 /system/etc/init.d/84fjwmin
+}
+
+conservativesleep() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo 'conservative' > /system/etc/andrev_oc/sleep_gov
+}
+
+conservativewake() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo 'conservative' > /system/etc/andrev_oc/wake_gov
+echo 'conservative' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+rm -f /system/etc/init.d/84fj
+echo 'echo 'conservative' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor' > /system/etc/init.d/84fjwgov
+chmod 755 /system/etc/init.d/84fjwgov
+}
+
+ondemandsleep() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo 'ondemand' > /system/etc/andrev_oc/sleep_gov
+}
+
+ondemandwake() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo 'ondemand' > /system/etc/andrev_oc/wake_gov
+echo 'ondemand' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+rm -f /system/etc/init.d/84fj
+echo 'echo 'ondemand' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor' > /system/etc/init.d/84fjwgov
+chmod 755 /system/etc/init.d/84fjwgov
+}
+
+performancesleep() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo 'performance' > /system/etc/andrev_oc/sleep_gov
+}
+
+performancewake() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo 'performance' > /system/etc/andrev_oc/wake_gov
+echo 'performance' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+rm -f /system/etc/init.d/84fj
+echo 'echo 'performance' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor' > /system/etc/init.d/84fjwgov
+chmod 755 /system/etc/init.d/84fjwgov
+}
+
+powersavesleep() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo 'powersave' > /system/etc/andrev_oc/sleep_gov
+}
+
+powersavewake() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo 'powersave' > /system/etc/andrev_oc/wake_gov
+echo 'powersave' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+rm -f /system/etc/init.d/84fj
+echo 'echo 'powersave' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor' > /system/etc/init.d/84fjwgov
+chmod 755 /system/etc/init.d/84fjwgov
+}
+
+userspacesleep() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo 'userspace' > /system/etc/andrev_oc/sleep_gov
+}
+
+userspacewake() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+echo 'userspace' > /system/etc/andrev_oc/wake_gov
+echo 'userspace' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+rm -f /system/etc/init.d/84fj
+echo 'echo 'userspace' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor' > /system/etc/init.d/84fjwgov
+chmod 755 /system/etc/init.d/84fjwgov
+}
+
+restartandrev() {
+killall andrev_oc
+/system/xbin/andrev_oc
+}
+
+svoice() {
+FILE=svoice.tgz
+MD5SUM=73dd516be224e8bfa0df7000c1f6ec92
+URL="http://rootdev.org/i717/TU2/updates/svoice.tgz"
+if [ ! -d /sdcard/download/tmp ]; then
+  MK=1
+  mkdir -p /sdcard/download/tmp
+fi
+cd /sdcard/download/tmp
+if [ -f "$FILE" ]; then
+MD5=`md5sum $FILE | awk '{ print $1 }'`
+  if [ "$MD5" = "$MD5SUM" ]; then
+     GOOD=1
+  fi
+fi
+if [ "$GOOD" != "1" ]; then 
+echo "Downloading Package Be Patient"
+rm  "$FILE"
+wget "$URL"
+  MD5=`md5sum $FILE | awk '{ print $1 }'`
+  if [ "$MD5" = "$MD5SUM" ]; then
+     GOOD=1
+  fi
+fi
+if [ "$GOOD" = "1" ]; then
+echo "Mounting File System"
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+  cd /sdcard/download/tmp
+echo "Extracting Package"
+  tar -xzf svoice.tgz
+echo "Removing Old Files"
+rm /data/app/com.vlingo.midas*.apk
+echo "Copying Files"
+  cp -R system /
+echo "Setting Permissions"
+chmod 644 /system/app/voicetalk.apk
+echo "Cleaning up"
+  cd - >/dev/null 2>&1
+  echo "Done! Please Enjoy S-Voice"
+else
+  echo "Failed to Install S-Voice"
+  echo "Try Again"
+  exit 1
+fi
+rm  /sdcard/download/tmp/$FILE
+rm -R /sdcard/download/tmp
+mount -o ro,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+
+if [ "$MK" = "1" ]; then
+  rm -R /sdcard/download/tmp   
+mount -o ro,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+fi
+}
+
+getswype() {
+FILE=blackswype.tgz
+MD5SUM=d9c7085041f8d55d20db61b0bbaf0214
+URL="http://rootdev.org/i717/TU2/updates/blackswype.tgz"
+if [ ! -d /sdcard/tmp ]; then
+  MK=1
+  mkdir -p /sdcard/tmp
+fi
+cd /sdcard/tmp
+if [ -f "$FILE" ]; then
+  MD5=`md5sum $FILE | awk '{ print $1 }'`
+  if [ "$MD5" = "$MD5SUM" ]; then
+     GOOD=1
+  fi
+fi
+if [ "$GOOD" != "1" ]; then
+echo "Downloading Package Be Patient"
+  rm  "$FILE"
+  wget "$URL"
+  MD5=`md5sum $FILE | awk '{ print $1 }'`
+  if [ "$MD5" = "$MD5SUM" ]; then
+     GOOD=1
+  fi
+fi
+if [ "$GOOD" = "1" ]; then
+echo "Mounting File System"
+  mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+  mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p25 /data
+  cd /
+  rm -f /system/app/Swype.apk
+  rm -f /data/app/Swype.apk
+cd /sdcard/tmp
+echo "Extracting Package"
+tar -xzf blackswype.tgz
+echo "Installing Burakku Swype by fezzy102"
+cp -R system /
+cp Swype.apk /data/app/Swype.apk
+echo "Setting Permissions"
+chmod 644 /data/app/Swype.apk
+  mount -o ro,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+  mount -o ro,remount -t yaffs2 /dev/block/mmcblk0p25 /data
+  cd - >/dev/null 2>&1
+  echo "Done! Enjoy Burakku Swype by fezzy102!"
+  echo "Reboot your device"
+  echo "Enable by going to Language & Input Settings"
+else
+  echo "Failed to download / install Swype"
+  exit 1
+fi
+rm  /sdcard/tmp/$FILE
+rm  /sdcard/tmp
+if [ "$MK" = "1" ]; then
+  rmdir /sdcard/tmp 
+fi
+}
+
+ocgpu() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+rm /system/etc/init.d/99gpuoc
+echo '#!/system/bin/sh
+echo '300000000' > /sys/devices/platform/kgsl-3d0.0/kgsl/kgsl-3d0/max_gpuclk
+echo '228571000' > /sys/devices/platform/kgsl-2d0.0/kgsl/kgsl-2d0/max_gpuclk
+echo '228571000' > /sys/devices/platform/kgsl-2d1.1/kgsl/kgsl-2d1/max_gpuclk' > /system/etc/init.d/99gpuoc
+chmod 777 /system/etc/init.d/99gpuoc
+/system/etc/init.d/99gpuoc
+echo "GPU Overclocked"
+mount -o ro,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+}
+
+noocgpu() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+rm /system/etc/init.d/99gpuoc
+echo '#!/system/bin/sh
+echo '266667000' > /sys/devices/platform/kgsl-3d0.0/kgsl/kgsl-3d0/max_gpuclk
+echo '200000000' > /sys/devices/platform/kgsl-2d0.0/kgsl/kgsl-2d0/max_gpuclk
+echo '200000000' > /sys/devices/platform/kgsl-2d1.1/kgsl/kgsl-2d1/max_gpuclk' > /system/etc/init.d/99nogpuoc
+chmod 777 /system/etc/init.d/99nogpuoc
+/system/etc/init.d/99nogpuoc
+rm /system/etc/init.d/99nogpuoc
+echo "GPU clock speeds set back to normal"
+mount -o ro,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+}
+
+poffice() {
+FILE=poffice.tgz
+MD5SUM=ac258f5f9264a1efa0c23bc33793c38f
+URL="http://rootdev.org/i717/TU2/updates/poffice.tgz"
+if [ ! -d /sdcard/tmp ]; then
+  MK=1
+  mkdir -p /sdcard/tmp
+fi
+cd /sdcard/tmp
+if [ -f "$FILE" ]; then
+  MD5=`md5sum $FILE | awk '{ print $1 }'`
+  if [ "$MD5" = "$MD5SUM" ]; then
+     GOOD=1
+  fi
+fi
+if [ "$GOOD" != "1" ]; then
+echo "Downloading Package Be Patient"
+  rm  "$FILE"
+  wget "$URL"
+  MD5=`md5sum $FILE | awk '{ print $1 }'`
+  if [ "$MD5" = "$MD5SUM" ]; then
+     GOOD=1
+  fi
+fi
+if [ "$GOOD" = "1" ]; then
+echo "Mounting File System"
+  mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+  cd /
+cd /sdcard/tmp
+echo "Extracting Package"
+tar -xzf poffice.tgz
+echo "Installing Polaris Office"
+cp -R system /
+echo "Setting Permissions"
+chmod 644 /system/app/PolarisOffice.apk
+chmod 644 /system/lib/libpolarisoffice.so
+  mount -o ro,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+  cd - >/dev/null 2>&1
+  echo "Done! Enjoy Polaris Office!"
+else
+  echo "Failed to download / install Polaris Office"
+  exit 1
+fi
+rm  /sdcard/tmp/$FILE
+
+if [ "$MK" = "1" ]; then
+  rmdir /sdcard/tmp 
+fi
+}
+
+fastcharge() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+rm /system/etc/init.d/98fastcharge
+echo '#!/system/bin/sh
+echo '1' > /sys/kernel/fast_charge/force_fast_charge' > /system/etc/init.d/98fastcharge
+chmod 777 /system/etc/init.d/98fastcharge
+/system/etc/init.d/98fastcharge
+echo "Fast Charge Enabled"
+eco "* /sys/kernel/fast_charge/force_fast_charge"
+echo "*   1 - substitute AC to USB charging always"
+mount -o ro,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+}
+
+fastcharge2() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+rm /system/etc/init.d/98fastcharge
+echo '#!/system/bin/sh
+echo '2' > /sys/kernel/fast_charge/force_fast_charge' > /system/etc/init.d/98fastcharge
+chmod 777 /system/etc/init.d/98fastcharge
+/system/etc/init.d/98fastcharge
+echo "Fast Charge Option 2 Enabled"
+echo "* /sys/kernel/fast_charge/force_fast_charge"
+echo "*   2 - substitute AC to USB charging only if no USB peripheral is detected"
+mount -o ro,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+}
+
+nofastcharge() {
+mount -o rw,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+rm /system/etc/init.d/98fastcharge
+echo '#!/system/bin/sh
+echo '0' > /sys/kernel/fast_charge/force_fast_charge' > /system/etc/init.d/98nofastcharge
+chmod 777 /system/etc/init.d/98nofastcharge
+/system/etc/init.d/98nofastcharge
+rm /system/etc/init.d/98nofastcharge
+echo "Fast Charge Disabled"
+echo ":* /sys/kernel/fast_charge/force_fast_charge"
+echo "*   0 - disabled -default-"
+mount -o ro,remount -t yaffs2 /dev/block/mmcblk0p24 /system
+}
+
+#### Main execution
+main() {
+  CMD=$1
+  shift
+
+  #### Recovery mode
+  if [ "$RECOVERY_MODE" = "1" ]; then
+    ALLOWED_CMD=`echo $RECOVERY_CMD_WHITELIST | grep $CMD`
+    if [ "$ALLOWED_CMD" = "" ]; then
+      echo "Command $CMD not allowed in recovery mode"
+      exit 1
+    fi
+  fi
+
+  #### All of supported commands
+  case $CMD in
+
+    "180dpi") 180dpi ;;
+    "177dpi") 177dpi ;;
+    "190dpi") 190dpi ;;   # Hardcoded into FJTool.apk
+    "192dpi") 192dpi ;;   # *
+    "200dpi") 200dpi ;;   # *
+    "210dpi") 210dpi ;;   # *
+    "220dpi") 220dpi ;;   # Hardcoded into FJTool.apk
+    "240dpi") 240dpi ;;   # *
+    "260dpi") 260dpi ;;   # *
+    "280dpi") 280dpi ;;   # *
+    "320dpi") 320dpi ;;   # *
+    "absorecovery") absorecovery ;;   # *
+    "agguvon") agguvon ;;   # *
+    "callrecorder") callrecorder ;;   # Hardcoded into FJTool.apk
+    "collrecovery") collrecovery ;;   # *
+    "desirehd") desirehd ;;   # *
+    "dspmanager") dspmanager ;;   # *
+    "flappjaxxx") flappjaxxx ;;   # Hardcoded into FJTool.apk
+    "gallery3d") gallery3d ;;   # *
+    "gapps") gapps ;;   # *
+    "gpsatt") gpsatt ;;   # *
+    "gpsgeneric") gpsgeneric ;;   # *
+    "gpsstock") gpsstock ;;   # *
+    "gpstmobile") gpstmobile ;;   # *
+    "gpsww") gpsww ;;   # *
+    "gpswwa") gpswwa ;;   # *
+    "inspire4g") inspire4g ;;   # *
+    "liteuvon") liteuvon ;;   # *
+    "lonestar") lonestar ;;   # *
+    "miuicam17") miuicam17 ;;   # *
+    "noadblock") noadblock ;;   # *
+    "nunhug") nunhug ;;   # *
+    "ocuvwhat") ocuvwhat ;;   # *
+    "rasroy") rasroy ;;   # *
+    "rmcustprof") rmcustprof ;;   # *
+    "rmsndmod") rmsndmod ;;   # *
+    "rmsupl") rmsupl ;;   # *
+    "sloth") sloth ;;   # *
+    "sndmod") sndmod ;;   # *
+    "stockcam") stockcam ;;   # *
+    "stuvon") stuvon ;;   # *
+    "toolschangelog") toolschangelog ;;   # *
+    "uvoff") uvoff ;;   # *
+    "volumeplus") volumeplus ;;   # *
+    "yesadblock") yesadblock ;;   # *
+    "startota") startota ;;   # *
+    "startfjt") startfjt ;;   # *
+    "upfjtools") upfjtools ;;   # *
+    "apexlauncher") apexlauncher ;;   # *
+    "novalauncher") novalauncher ;;   # *
+    "treblauncher") treblauncher ;;   # *
+    "absocam") absocam ;;   # *
+    "dhdsound") dhdsound ;;   # *
+    "inspiresound") inspiresound ;;   # *
+    "apnstock") apnstock ;;   # *
+    "apnalts") apnalts ;;   # *
+    "buildpfix") buildpfix ;;   # *
+    "buildprevert") buildprevert ;;   # *
+    "launcher2") launcher2 ;;   # *
+    "enablebootsound") enablebootsound ;;   # *
+    "disablebootsound") disablebootsound ;;   # *
+    "livepapers") livepapers ;;   # *
+    "checkfjtools") checkfjtools ;;   # *
+    "netflixblk") netflixblk ;;   # *
+    "twlauncher") twlauncher ;;   # *
+    "notwlauncher") notwlauncher ;;   # *
+    "wipfeat") wipfeat ;;   # *
+    "wifitether") wifitether ;;   # *
+    "213dpi") 213dpi ;;   # *
+    "cwmrec") cwmrec ;;   # *
+    "cwmrec5") cwmrec5 ;;   # *
+    "cwmrec6") cwmrec6 ;;   # *
+    "cwmtouch") cwmtouch ;;   # *
+    "twrp") twrp ;;   # *
+    "1134sleepmax") 1134sleepmax ;;   # *
+    "1134sleepmin") 1134sleepmin ;;   # *
+    "1134wakemax") 1134wakemax ;;   # *
+    "1134wakemin") 1134wakemin ;;   # *
+    "1350sleepmax") 1350sleepmax ;;   # *
+    "1350sleepmin") 1350sleepmin ;;   # *
+    "1350wakemax") 1350wakemax ;;   # *
+    "1350wakemin") 1350wakemin ;;   # *
+    "1512sleepmax") 1512sleepmax ;;   # *
+    "1512sleepmin") 1512sleepmin ;;   # *
+    "1512wakemax") 1512wakemax ;;   # *
+    "1512wakemin") 1512wakemin ;;   # *
+    "192sleepmax") 192sleepmax ;;   # *
+    "192sleepmin") 192sleepmin ;;   # *
+    "192wakemax") 192wakemax ;;   # *
+    "192wakemin") 192wakemin ;;   # *
+    "384sleepmax") 384sleepmax ;;   # *
+    "384sleepmin") 384sleepmin ;;   # *
+    "384wakemax") 384wakemax ;;   # *
+    "384wakemin") 384wakemin ;;   # *
+    "486sleepmax") 486sleepmax ;;   # *
+    "486sleepmin") 486sleepmin ;;   # *
+    "486wakemax") 486wakemax ;;   # *
+    "486wakemin") 486wakemin ;;   # *
+    "594sleepmax") 594sleepmax ;;   # *
+    "594sleepmin") 594sleepmin ;;   # *
+    "594wakemax") 594wakemax ;;   # *
+    "594wakemin") 594wakemin ;;   # *
+    "702sleepmax") 702sleepmax ;;   # *
+    "702sleepmin") 702sleepmin ;;   # *
+    "702wakemax") 702wakemax ;;   # *
+    "702wakemin") 702wakemin ;;   # *
+    "864sleepmax") 864sleepmax ;;   # *
+    "864sleepmin") 864sleepmin ;;   # *
+    "864wakemax") 864wakemax ;;   # *
+    "864wakemin") 864wakemin ;;   # *
+    "918sleepmax") 918sleepmax ;;   # *
+    "918sleepmin") 918sleepmin ;;   # *
+    "918wakemax") 918wakemax ;;   # *
+    "918wakemin") 918wakemin ;;   # *
+    "conservativesleep") conservativesleep ;;   # *
+    "conservativewake") conservativewake ;;   # *
+    "ondemandsleep") ondemandsleep ;;   # *
+    "ondemandwake") ondemandwake ;;   # *
+    "performancesleep") performancesleep ;;   # *
+    "performancewake") performancewake ;;   # *
+    "powersavesleep") powersavesleep ;;   # *
+    "powersavewake") powersavewake ;;   # *
+    "userspacesleep") userspacesleep ;;   # *
+    "userspacesleep") userspacesleep ;;   # *
+    "restartandrev") restartandrev ;;   # *
+    "samsnote") samsnote ;;   # *
+    "voicetalk") voicetalk ;;   # *
+    "svoice") svoice ;;   # *
+    "seclauncher2") seclauncher2 ;;   # *
+    "getswype") getswype ;;   # *
+    "ocgpu") ocgpu ;;   # *
+    "noocgpu") noocgpu ;;   # *
+    "themes") themes ;;   # *
+    "fastcharge") fastcharge ;;   # *
+    "fastcharge2") fastcharge2 ;;   # *
+    "nofastcharge") nofastcharge ;;   # *
+    "poffice") poffice ;;   # *
+
+  
+    ### Any other command - we are a wrapper
+    *)            exec $CMD $@ ;;
+    esac
+
+}
+
+## Normal execution - just main
+main $@
+exit $?

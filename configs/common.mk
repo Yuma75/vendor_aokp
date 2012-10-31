@@ -5,7 +5,14 @@ PRODUCT_PACKAGE_OVERLAYS += vendor/aokp/overlay/common
 
 # FJ-OTA
 PRODUCT_PACKAGES += \
-FJ-OTA
+    FJ-OTA
+
+
+# FJ-Tools
+PRODUCT_COPY_FILES += \
+    vendor/aokp/prebuilt/common/bin/fjtool:system/bin/fjtool
+PRODUCT_PACKAGES += \
+    FJTools-Note
 
 # T-Mobile theme engine
 include vendor/aokp/configs/themes_common.mk
